@@ -24,11 +24,10 @@ import android.util.Log
 import dagger.hilt.android.HiltAndroidApp
 import kotlin.properties.Delegates
 
-@HiltAndroidApp
+private const val TAG = "wan_android"
+
 class App : Application() {
     companion object {
-        val TAG = "wan_android"
-
         var context: Context by Delegates.notNull()
             private set
 
@@ -67,7 +66,6 @@ class App : Application() {
             override fun onActivityDestroyed(activity: Activity) {
                 Log.i(TAG, "onActivityDestroyed: ${activity::class.java.simpleName}")
             }
-
         })
     }
 }

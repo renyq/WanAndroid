@@ -8,10 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.map
 import androidx.paging.LoadState
 import androidx.recyclerview.widget.DividerItemDecoration
 import com.renyongqiang.wanandroid.adapter.FooterAdapter
@@ -30,20 +27,35 @@ class HomeFragment : Fragment() {
     private var loadJob: Job? = null
     private lateinit var binding: FragmentHomeBinding
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.i(TAG, "onCreate: ")
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.i(TAG, "onCreateView: ")
         binding = FragmentHomeBinding.inflate(inflater, container, false)
         context ?: return binding.root
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        Log.i(TAG, "onViewCreated: ")
         val recyclerView = binding.recyclerView
         adapter.setItemClickListener(object : HomeAdapter.OnItemClick {
             override fun gotoArticle(item: Article) {
-                Log.i(TAG, "onCreate: viewModel=${homeViewModel},title=${homeViewModel.title}")
+                Log.i(TAG, "gotoArticle: viewModel=${homeViewModel},title=${homeViewModel.title}")
                 val hasObservers = homeViewModel.title.hasObservers()
                 val hasActiveObservers = homeViewModel.title.hasActiveObservers()
-                Log.i(TAG, "gotoArticle: hasObservers=$hasObservers,hasActiveObservers=$hasActiveObservers")
+                Log.i(
+                    TAG,
+                    "gotoArticle: hasObservers=$hasObservers,hasActiveObservers=$hasActiveObservers"
+                )
                 homeViewModel.title.setValue(item.title)
             }
         })
@@ -77,34 +89,16 @@ class HomeFragment : Fragment() {
                 }
             }
         }
-        return binding.root
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-//        contentViewModel = ViewModelProvider(this).get(ContentViewModel::class.java)
-//        Log.d(Companion.TAG, "onActivityCreated: ")
-
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
     }
 
     private fun load() {
         loadJob?.cancel()
         loadJob = lifecycleScope.launch {
+            Log.i(TAG, "load: ")
             homeViewModel.requestArticles(0).collectLatest {
                 adapter.submitData(it)
             }
         }
-//        homeViewModel.title.observe(this.viewLifecycleOwner, object : Observer<String> {
-//            override fun onChanged(t: String?) {
-//                Log.i(TAG, "onChanged: $t")
-//            }
-//        })
-
     }
 
     companion object {

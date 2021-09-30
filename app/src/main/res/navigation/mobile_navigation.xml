@@ -11,8 +11,8 @@
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home">
         <action
-            android:id="@+id/action_navigation_home_to_navigation_content"
-            app:destination="@id/navigation_content"
+            android:id="@+id/action_navigation_home_to_activity_browser"
+            app:destination="@id/activity_browser"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"
             app:popEnterAnim="@anim/slide_in_left"
@@ -31,11 +31,10 @@
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
 
-    <fragment
-        android:id="@+id/navigation_content"
-        android:name="com.renyongqiang.wanandroid.ui.content.ContentFragment"
-        android:label="@string/title_content"
-        tools:layout="@layout/fragment_content">
+    <activity
+        android:id="@+id/activity_browser"
+        android:name="com.renyongqiang.wanandroid.ui.activity.BrowserActivity"
+        tools:layout="@layout/activity_browser">
         <argument
             android:name="id"
             app:argType="integer" />
@@ -45,5 +44,5 @@
         <argument
             android:name="link"
             app:argType="string" />
-    </fragment>
+    </activity>
 </navigation>

@@ -33,7 +33,7 @@ class HomeAdapter : PagingDataAdapter<Article, HomeAdapter.HomeViewHolder>(Artic
 
         private fun navigateToArticle(id: Int, title: String, link: String, view: View) {
             val direction = HomeFragmentDirections
-                .actionNavigationHomeToNavigationContent(id, title, link)
+                .actionNavigationHomeToActivityBrowser(id, title, link)
             view.findNavController().navigate(direction)
         }
 

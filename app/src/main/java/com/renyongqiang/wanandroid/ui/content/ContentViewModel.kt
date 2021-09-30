@@ -3,28 +3,27 @@ package com.renyongqiang.wanandroid.ui.content
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.util.Log
 import android.view.View
 import android.webkit.*
 import androidx.core.content.ContextCompat.startActivity
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.renyongqiang.wanandroid.App.Companion.context
-import androidx.core.content.ContextCompat.startActivity
-
-import android.content.pm.ResolveInfo
-
-import android.os.Build
-
-import android.webkit.WebView
-import androidx.core.content.ContextCompat
-import java.lang.Exception
 import java.net.URISyntaxException
 
 
 class ContentViewModel : ViewModel() {
+    private val _loadProgress = MutableLiveData(0)
+
     val webViewClient by lazy { Client() }
+    val chromeClient by lazy { ChromeClient() }
+
     var progressVisibility: MutableLiveData<Int> = MutableLiveData(View.VISIBLE)
+    val loadProgress: LiveData<Int> = _loadProgress
+    var webTitle: MutableLiveData<String> = MutableLiveData()
 
     inner class Client : WebViewClient() {
         override fun onReceivedError(
@@ -45,26 +44,9 @@ class ContentViewModel : ViewModel() {
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             Log.d(TAG, "onPageStarted: $url")
+            progressVisibility.value = View.VISIBLE
         }
 
-        //        override fun shouldOverrideUrlLoading(
-//            view: WebView?,
-//            request: WebResourceRequest?
-//        ): Boolean {
-//            if (request?.url == null) return false
-//            try {
-//                if (!request.url.toString()
-//                        .startsWith("http://") && !request.url.toString().startsWith("https://")
-//                ) {
-//                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(request.url.toString()))
-//                    startActivity(context,intent,null)
-//                    return true
-//                }
-//            } catch (e: Exception) { //防止crash (如果手机上没有安装处理某个scheme开头的url的APP, 会导致crash)
-//                return true //没有安装该app时，返回true，表示拦截自定义链接，但不跳转，避免弹出上面的错误页面
-//            }
-//            return super.shouldOverrideUrlLoading(view, request)
-//        }
         override fun shouldOverrideUrlLoading(view: WebView?, newurl: String): Boolean {
             try {
                 //处理intent协议
@@ -88,18 +70,12 @@ class ContentViewModel : ViewModel() {
                 }
                 // 处理自定义scheme协议
                 if (!newurl.startsWith("http") || !newurl.startsWith("https")) {
-                    Log.d("yxx", "处理自定义scheme-->$newurl")
                     try {
-                        // 以下固定写法
-                        val intent = Intent(
-                            Intent.ACTION_VIEW,
-                            Uri.parse(newurl)
-                        )
-                        intent.flags = (Intent.FLAG_ACTIVITY_NEW_TASK
-                                or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(newurl))
+                        intent.flags =
+                            (Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                         startActivity(context, intent, null)
                     } catch (e: Exception) {
-                        // 防止没有安装的情况
                         e.printStackTrace()
                     }
                     return true
@@ -108,6 +84,22 @@ class ContentViewModel : ViewModel() {
                 e.printStackTrace()
             }
             return super.shouldOverrideUrlLoading(view, newurl)
+        }
+    }
+
+    inner class ChromeClient : WebChromeClient() {
+        override fun onProgressChanged(view: WebView?, newProgress: Int) {
+            super.onProgressChanged(view, newProgress)
+            Log.i(TAG, "onProgressChanged: $newProgress")
+            _loadProgress.value = newProgress
+            if (newProgress == 100) {
+                progressVisibility.value = View.GONE
+            }
+        }
+
+        override fun onReceivedTitle(view: WebView?, title: String?) {
+            super.onReceivedTitle(view, title)
+            webTitle.value = title
         }
     }
 
@@ -120,8 +112,6 @@ fun String.startsWith(prefix: String): Boolean {
     var to = 0
     var po = 0
     var pc: Int = prefix.length
-    // Note: toffset might be near -1>>>1.
-    // Note: toffset might be near -1>>>1.
     if (0 > length - pc) {
         return false
     }
